@@ -1,6 +1,6 @@
 <h1>Изнанка помогает быстро начать писать проект</h1>
 <p>Для начала удалите файл <span>/system/tpl/hello.tpl</span>,<br>отредактируйте <span>/system/tpl/index.tpl</span>,<br>и задайте шаблон в <span>/system/config.php</span>.</p>
-<a href="https://misha.myrt.co/tools/iznanka/"><img src="/img/i@2x.png"></a>
+<a href="https://misha.myrt.co/tools/iznanka/"><img src="/img/i@4x.png"></a>
 
 <style type="text/css" media="screen">
     body,
