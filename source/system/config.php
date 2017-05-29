@@ -2,7 +2,7 @@
   'usedb' => false,
   'ver' => '2.1',
   'title' => 'Изнанка',
-  'deftemplate' => 'main.tpl',
+  'deftemplate' => 'hello.tpl',
   'allowdebug' => true,
   'dbname' => '',
   'dbusername' => '',

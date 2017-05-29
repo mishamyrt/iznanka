@@ -1,6 +1,6 @@
 <?php
 switch ($view->uri) {
- 	case "/test":
+ 	case "/about":
  		$view->set('title', 'Тесты');
 		$view->set('template', 'test.tpl');   
  	break;
