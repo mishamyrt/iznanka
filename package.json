@@ -1,0 +1,15 @@
+{
+    "name": "iznanka2",
+    "version": "2.0.0",
+    "description": "Powerful PHP engine",
+    "main": "gulpfile.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "gulp": "^3.9.1",
+        "node-cmd": "^1.2.0"
+    }
+}
