@@ -23,10 +23,18 @@ class view
         $this->_var[$name] = $value;
     }
 
+    public function __get($name)
+    {
+        if (isset($this->_var[$name])) {
+            return $this->_var[$name];
+        }
+        return '';
+    }
+
     private function _include($template)
     {
         $content = file_get_contents($this->_path . $template);
-    	eval('?>' . $this->_render($content));
+        eval('?>' . $this->_render($content));
     }
 
     private function _anticache($filename)
@@ -43,14 +51,6 @@ class view
     {
         $content = file_get_contents($this->_path . $template);
         eval('?>' . $this->_render($content));
-    }
-
-    public function __get($name)
-    {
-        if (isset($this->_var[$name])) {
-            return $this->_var[$name];
-        }
-        return '';
     }
 
     public function compile($path)
@@ -136,5 +136,5 @@ function iznanka()
 }
 function runModule($module, $view, $db)
 {
-    include ROOT_DIR . '/system/modules/' . $module . '.php';
+    include_once ROOT_DIR . '/system/modules/' . $module . '.php';
 }
