@@ -1,5 +1,6 @@
 <?php
 define("ROOT_DIR", getcwd());
+define("iznanka_version", '2.1');
 
 class view
 {
@@ -117,7 +118,7 @@ function iznanka()
     $view->set('path', explode("/", $_SERVER["REQUEST_URI"]));
     $view->set('uri', $_SERVER['REQUEST_URI']);
     foreach (glob(ROOT_DIR . '/system/includes/' . "*.php") as $php_file) {
-        include ($php_file);
+        include_once ($php_file);
     }
     if ($view->uri == '/' && $view->template == ' ') {
         $view->set('template', $config['deftemplate']);
@@ -128,7 +129,7 @@ function iznanka()
         $view->set('title', '404');
         $view->set('error', true);
     }
-    header('X-Powered-By: Iznanka '.$config['ver']);
+    header('X-Powered-By: Iznanka '.iznanka_version);
     $view->display('index.tpl');
     if ($config['usedb'] && $db) {
         $db->close();
