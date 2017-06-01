@@ -66,6 +66,7 @@ class view
     private function _compile($content)
     {
         ob_start();
+        // echo $this->_render($content);
         eval('?> ' . $this->_render($content));
         return ob_get_clean();
     }
@@ -74,7 +75,7 @@ class view
         $patterns = array_keys($this->_dict);
         $values = array_values($this->_dict);
         preg_match_all("/{{(.[^}]*)}}/", $content, $blocks);
-        foreach ($blocks[1] as $block) {
+        foreach ($blocks[0] as $block) {
             $content = str_replace($block, preg_replace($patterns, $values, $block), $content);
         }
         $content = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $content);
