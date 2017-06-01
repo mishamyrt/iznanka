@@ -10,15 +10,7 @@
 </head>
 
 <body>
-    <section>
-        {{include file='@template'}}
-        <ul>
-            {{@items as $item}}
-            <li>{{$item['title']}}</li>
-            {{end}}
-        </ul>
-    </section>
-
+    {{include file='@template'}}
 </body>
 
 </html>
