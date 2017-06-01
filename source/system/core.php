@@ -16,8 +16,9 @@ class view
         "/else/" => '}else{',
         "/end/" => '}',
         "/#/" => ' echo ',
-        "/@/" => '$this->',
-        '/for \((.*)=(.*) to (.*)\)/' => 'for ($1=$2; $1 < $3; ++$1){'
+        '/for \((.*)=(.*) to (.*)\)/' => 'for ($1=$2; $1 < $3; ++$1){',
+        "/(.*) as ([^\s]+)/" => 'foreach ($1 as $2){',
+        "/@/" => '$this->'
     );
     public function set($name, $value)
     {
@@ -58,18 +59,14 @@ class view
     {
         ob_start();
         $content = file_get_contents($path);
-        if ($this->rawprint) {
-            $this->_render($content);
-        } else {
-            eval('?>' . $this->_render($content));
-        }
+        eval('?> ' . $this->_render($content));
         return ob_get_clean();
     }
 
     private function _compile($content)
     {
         ob_start();
-        eval('?>' . $this->_render($content));
+        eval('?> ' . $this->_render($content));
         return ob_get_clean();
     }
     private function _render($content)
@@ -77,10 +74,10 @@ class view
         $patterns = array_keys($this->_dict);
         $values = array_values($this->_dict);
         preg_match_all("/{{(.[^}]*)}}/", $content, $blocks);
-        foreach ($blocks[0] as $block) {
+        foreach ($blocks[1] as $block) {
             $content = str_replace($block, preg_replace($patterns, $values, $block), $content);
         }
-        $content = preg_replace('/{{\$this-\>(.[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)}}/', '<?php echo $this->$1 ?>', $content);
+        $content = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $content);
         $content = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?>", $content);
         return $content;
     }
@@ -98,8 +95,9 @@ class view
 
 $config = include('config.php');
 $db = null;
+$view = null;
 
-function connectdb()
+function connect()
 {
     global $db, $config;
     $db = new mysqli("localhost", $config['dbusername'], $config['dbpass'], $config['dbname']);
@@ -112,7 +110,7 @@ function connectdb()
 function iznanka()
 {
     session_start();
-    global $db, $config;
+    global $db, $config, $view;
     $view = new view(false);
     $view->set('template', ' ');
     $view->set('path', explode("/", $_SERVER["REQUEST_URI"]));
@@ -131,11 +129,12 @@ function iznanka()
     }
     header('X-Powered-By: Iznanka '.iznanka_version);
     $view->display('index.tpl');
-    if ($config['usedb'] && $db) {
+    if ($db) {
         $db->close();
     }
 }
-function runModule($module, $view, $db)
+function runModule($module)
 {
+    global $db, $view;
     include_once ROOT_DIR . '/system/modules/' . $module . '.php';
 }

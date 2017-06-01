@@ -12,7 +12,13 @@
 <body>
     <section>
         {{include file='@template'}}
+        <ul>
+            {{@items as $item}}
+            <li>{{$item['title']}}</li>
+            {{end}}
+        </ul>
     </section>
+
 </body>
 
 </html>
