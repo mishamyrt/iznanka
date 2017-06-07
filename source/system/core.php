@@ -5,7 +5,6 @@ define("iznanka_version", '2.2');
 class view
 {
     private $_path = ROOT_DIR . '/system/tpl/';
-    private $_cachepath;
     private $_template;
     private $_var = array();
 
@@ -49,12 +48,6 @@ class view
         }
     }
 
-    private function _cachedinclude($template)
-    {
-        $content = file_get_contents($this->_path . $template);
-        eval('?>' . $this->_render($content));
-    }
-
     public function compile($path)
     {
         ob_start();
@@ -82,7 +75,7 @@ class view
         return $content;
     }
 
-    public function display($template, $cache = false)
+    public function display($template)
     {
         $this->_template = $this->_path . $template;
         if (!file_exists($this->_template)) {
