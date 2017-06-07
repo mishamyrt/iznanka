@@ -1,7 +1,7 @@
 {
-    "name": "iznanka2",
-    "version": "2.0.0",
-    "description": "Powerful PHP engine",
+    "name": "iznanka",
+    "version": "2.2.0",
+    "description": "Simple PHP engine",
     "main": "gulpfile.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,6 +10,7 @@
     "license": "ISC",
     "devDependencies": {
         "gulp": "^3.9.1",
+        "gulp-zip": "^4.0.0",
         "node-cmd": "^1.2.0"
     }
 }

@@ -17,7 +17,7 @@ class view
         "/end/" => '}',
         "/#/" => ' echo ',
         '/for \((.*)=(.*) to (.*)\)/' => 'for ($1=$2; $1 < $3; ++$1){',
-        "/(.*) as ([^\s]+)/" => 'foreach ($1 as $2){',
+        "/{{(.*) as ([^\s]+)}}/" => '{{foreach ($1 as $2){}}',
         "/@/" => '$this->'
     );
     public function set($name, $value)
@@ -66,7 +66,6 @@ class view
     private function _compile($content)
     {
         ob_start();
-        // echo $this->_render($content);
         eval('?> ' . $this->_render($content));
         return ob_get_clean();
     }
