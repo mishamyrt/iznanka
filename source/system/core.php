@@ -1,6 +1,6 @@
 <?php
 define("ROOT_DIR", getcwd());
-define("iznanka_version", '2.1');
+define("iznanka_version", '2.2');
 
 class view
 {
