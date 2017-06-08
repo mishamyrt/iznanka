@@ -9,15 +9,15 @@ class view
     private $_var = array();
 
     protected $_dict = array(
-        "/include file='(.*)'/" => '$this->_include("$1")',
-        "/anticache file='(.*)'/" => '$this->_anticache("$1")',
-        "/if \((.*)\)/" => 'if ($1){',
-        "/else/" => '}else{',
-        "/end/" => '}',
-        "/#/" => ' echo ',
+        "/include file='(.*)'/"       => '$this->_include("$1")',
+        "/anticache file='(.*)'/"     => '$this->_anticache("$1")',
+        "/if \((.*)\)/"               => 'if ($1){',
+        "/else/"                      => '}else{',
+        "/end/"                       => '}',
+        "/#/"                         => ' echo ',
         '/for \((.*)=(.*) to (.*)\)/' => 'for ($1=$2; $1 < $3; ++$1){',
-        "/{{(.*) as ([^\s]+)}}/" => '{{foreach ($1 as $2){}}',
-        "/@/" => '$this->'
+        "/{{(.*) as ([^\s]+)}}/"      => '{{foreach ($1 as $2){}}',
+        "/@/"                         => '$this->'
     );
     public function set($name, $value)
     {
@@ -40,12 +40,11 @@ class view
 
     private function _anticache($filename)
     {
-        try {
-            $md5 = filemtime(ROOT_DIR . $filename);
-            echo $filename . '?' . $md5;
-        } catch (Exception $e) {
+        $file = ROOT_DIR . $filename;
+        if (file_exists($file))
+            echo $filename . '?' . filemtime($file);
+        else
             echo $filename;
-        }
     }
 
     public function compile($path)
@@ -96,8 +95,7 @@ function connect()
     $db = new mysqli("localhost", $config['dbusername'], $config['dbpass'], $config['dbname']);
     $db->set_charset("utf8");
     if ($db->connect_errno) {
-        printf("Не удалось подключиться: %s\n", $db->connect_error);
-        exit();
+        die("Не удалось подключиться: " . $db->connect_error . "\n");
     }
 }
 function iznanka()
