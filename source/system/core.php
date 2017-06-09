@@ -21,6 +21,7 @@ class View
         "/{{(.*) as ([^\s]+)}}/"      => '{{foreach ($1 as $2){}}',
         "/@/"                         => '$this->'
     );
+
     public function set($name, $value)
     {
         $this->_var[$name] = $value;
@@ -41,7 +42,7 @@ class View
             die('There is no template at ' . $file);
         }
         $content = file_get_contents($file);
-        eval('?>' . $this->_render($content));
+        echo $this->compile($content);
     }
 
     private function _anticache($filename)
@@ -54,27 +55,20 @@ class View
         }
     }
 
-    public function compile($path)
+    private function compile($content)
     {
         ob_start();
-        $content = file_get_contents($path);
         eval('?> ' . $this->_render($content));
         return ob_get_clean();
     }
 
-    private function _compile($content)
-    {
-        ob_start();
-        eval('?> ' . $this->_render($content));
-        return ob_get_clean();
-    }
     private function _render($content)
     {
         $patterns = array_keys($this->_dict);
         $values = array_values($this->_dict);
         preg_match_all("/{{(.[^}]*)}}/", $content, $blocks);
-        foreach ($blocks[0] as $block) {
-            $content = str_replace($block, preg_replace($patterns, $values, $block), $content);
+        for ($i=0; $i < sizeof($blocks[0]); $i++) {
+             $content = str_replace($blocks[0][$i], preg_replace($patterns, $values, $blocks[0][$i]), $content);
         }
         $content = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $content);
         $content = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?>", $content);
@@ -87,7 +81,7 @@ class View
         if (!file_exists($file)) {
             die('There is no template at '. $file);
         }
-        $content = $this->_compile(file_get_contents($file));
+        $content = $this->compile(file_get_contents($file));
         echo $content;
     }
 }
@@ -95,46 +89,49 @@ class View
 function connect()
 {
     global $db, $config;
-    $db = new mysqli("localhost", $config['dbusername'], $config['dbpass'], $config['dbname']);
-    $db->set_charset("utf8");
+    $db = new mysqli('localhost', $config['dbusername'], $config['dbpass'], $config['dbname']);
+    $db->set_charset('utf8');
     if ($db->connect_errno) {
-        die("Can't connect to datebase: " . $db->connect_error . "\n");
+        die('Can\'t connect to datebase: ' . $db->connect_error . "\n");
     }
 }
+
 function throw404()
 {
     global $view;
-    header("HTTP/1.0 404 Not Found");
+    header('HTTP/1.0 404 Not Found');
     $view->set('template', '404.tpl');
     $view->set('title', '404');
-    $view->set('error', true);
 }
+
+function runModule($module)
+{
+    global $db, $view;
+    include_once ROOT_DIR . '/system/modules/' . $module . '.php';
+}
+
 function iznanka()
 {
     session_start();
     global $db, $config, $view;
     $view = new View();
-    $view->set('template', ' ');
-    define('path', explode("/", $_SERVER["REQUEST_URI"]));
+    define('path', explode("/", $_SERVER['REQUEST_URI']));
     define('uri', $_SERVER['REQUEST_URI']);
     $includes = glob(ROOT_DIR . '/system/includes/' . '*.php');
     for ($i=0; $i < sizeof($includes); $i++) {
         include_once ($includes[$i]);
     }
-    if (uri == '/' && $view->template == ' ') {
-        $view->set('template', $config['deftemplate']);
-        $view->set('title', $config['title']);
-    } elseif ($view->template == ' ') {
-        throw404();
+    if ($view->template === '') {
+        if (uri === '/') {
+            $view->set('template', $config['deftemplate']);
+            $view->set('title', $config['title']);
+        } else {
+            throw404();
+        }
     }
-    header('X-Powered-By: Iznanka '.iznanka_version);
+    header('X-Powered-By: Iznanka ' . iznanka_version);
     $view->display('index.tpl');
     if ($db) {
         $db->close();
     }
-}
-function runModule($module)
-{
-    global $db, $view;
-    include_once ROOT_DIR . '/system/modules/' . $module . '.php';
 }
