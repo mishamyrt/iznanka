@@ -1,11 +1,13 @@
 <?php
 define("ROOT_DIR", getcwd());
 define("iznanka_version", '2.2');
+$config = include('config.php');
+$db = null;
+$view = null;
 
 class view
 {
     private $_path = ROOT_DIR . '/system/tpl/';
-    private $_template;
     private $_var = array();
 
     protected $_dict = array(
@@ -34,7 +36,11 @@ class view
 
     private function _include($template)
     {
-        $content = file_get_contents($this->_path . $template);
+        $file = $this->_path . $template;
+        if (!file_exists($file)) {
+            die('There is no template at ' . $file);
+        }
+        $content = file_get_contents($file);
         eval('?>' . $this->_render($content));
     }
 
@@ -76,18 +82,14 @@ class view
 
     public function display($template)
     {
-        $this->_template = $this->_path . $template;
-        if (!file_exists($this->_template)) {
-            die('Шаблона ' . $this->_template . ' не существует!');
+        $file = $this->_path . $template;
+        if (!file_exists($file)) {
+            die('There is no template at '. $file);
         }
-        $content = $this->_compile(file_get_contents($this->_template));
+        $content = $this->_compile(file_get_contents($file));
         echo $content;
     }
 }
-
-$config = include('config.php');
-$db = null;
-$view = null;
 
 function connect()
 {
@@ -95,7 +97,7 @@ function connect()
     $db = new mysqli("localhost", $config['dbusername'], $config['dbpass'], $config['dbname']);
     $db->set_charset("utf8");
     if ($db->connect_errno) {
-        die("Не удалось подключиться: " . $db->connect_error . "\n");
+        die("Can't connect to datebase: " . $db->connect_error . "\n");
     }
 }
 function iznanka()
