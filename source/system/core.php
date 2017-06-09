@@ -5,7 +5,7 @@ $config = include('config.php');
 $db = null;
 $view = null;
 
-class view
+class View
 {
     private $_path = ROOT_DIR . '/system/tpl/';
     private $_var = array();
@@ -47,10 +47,11 @@ class view
     private function _anticache($filename)
     {
         $file = ROOT_DIR . $filename;
-        if (file_exists($file))
+        if (file_exists($file)) {
             echo $filename . '?' . filemtime($file);
-        else
+        } else {
             echo $filename;
+        }
     }
 
     public function compile($path)
@@ -100,25 +101,29 @@ function connect()
         die("Can't connect to datebase: " . $db->connect_error . "\n");
     }
 }
+function throw404()
+{
+    header("HTTP/1.0 404 Not Found");
+    $view->set('template', '404.tpl');
+    $view->set('title', '404');
+    $view->set('error', true);
+}
 function iznanka()
 {
     session_start();
     global $db, $config, $view;
-    $view = new view(false);
+    $view = new View();
     $view->set('template', ' ');
     $view->set('path', explode("/", $_SERVER["REQUEST_URI"]));
     $view->set('uri', $_SERVER['REQUEST_URI']);
-    foreach (glob(ROOT_DIR . '/system/includes/' . "*.php") as $php_file) {
-        include_once ($php_file);
+    $includes = glob(ROOT_DIR . '/system/includes/' . '*.php');
+    for ($i=0; $i < sizeof($includes); $i++) {
+        include_once ($includes[$i]);
     }
     if ($view->uri == '/' && $view->template == ' ') {
         $view->set('template', $config['deftemplate']);
         $view->set('title', $config['title']);
     } elseif ($view->template == ' ') {
-        header("HTTP/1.0 404 Not Found");
-        $view->set('template', '404.tpl');
-        $view->set('title', '404');
-        $view->set('error', true);
     }
     header('X-Powered-By: Iznanka '.iznanka_version);
     $view->display('index.tpl');
