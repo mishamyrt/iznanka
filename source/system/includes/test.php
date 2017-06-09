@@ -1,5 +1,5 @@
 <?php
-if ($view->uri == '/test') {
+if (uri == '/test') {
     $view->set('passed', array(
         'P',
         'a',

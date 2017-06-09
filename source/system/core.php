@@ -103,6 +103,7 @@ function connect()
 }
 function throw404()
 {
+    global $view;
     header("HTTP/1.0 404 Not Found");
     $view->set('template', '404.tpl');
     $view->set('title', '404');
@@ -114,16 +115,17 @@ function iznanka()
     global $db, $config, $view;
     $view = new View();
     $view->set('template', ' ');
-    $view->set('path', explode("/", $_SERVER["REQUEST_URI"]));
-    $view->set('uri', $_SERVER['REQUEST_URI']);
+    define('path', explode("/", $_SERVER["REQUEST_URI"]));
+    define('uri', $_SERVER['REQUEST_URI']);
     $includes = glob(ROOT_DIR . '/system/includes/' . '*.php');
     for ($i=0; $i < sizeof($includes); $i++) {
         include_once ($includes[$i]);
     }
-    if ($view->uri == '/' && $view->template == ' ') {
+    if (uri == '/' && $view->template == ' ') {
         $view->set('template', $config['deftemplate']);
         $view->set('title', $config['title']);
     } elseif ($view->template == ' ') {
+        throw404();
     }
     header('X-Powered-By: Iznanka '.iznanka_version);
     $view->display('index.tpl');
