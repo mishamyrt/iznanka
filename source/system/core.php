@@ -64,14 +64,20 @@ class View
 
     private function _render($content)
     {
+        $lines = explode("\n", $content);
         $patterns = array_keys($this->_dict);
         $values = array_values($this->_dict);
-        preg_match_all("/{{(.[^}]*)}}/", $content, $blocks);
-        for ($i=0; $i < sizeof($blocks[0]); $i++) {
-             $content = str_replace($blocks[0][$i], preg_replace($patterns, $values, $blocks[0][$i]), $content);
+        for ($j = 0; $j < sizeof($lines); $j++) {
+            preg_match_all("/{{(.[^}]*)}}/", $lines[$j], $blocks);
+            if (sizeof($blocks[0]) > 0) {
+                for ($i=0; $i < sizeof($blocks[0]); $i++) {
+                    $lines[$j] = str_replace($blocks[0][$i], preg_replace($patterns, $values, $blocks[0][$i]), $lines[$j]);
+                }
+                $lines[$j] = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $lines[$j]);
+                $lines[$j] = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?>", $lines[$j]);
+            }
         }
-        $content = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $content);
-        $content = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?>", $content);
+        $content = implode("\n", $lines);
         return $content;
     }
 
