@@ -65,6 +65,7 @@ class View
     private function _render($content)
     {
         $lines = explode("\n", $content);
+        $linesmap = array();
         $patterns = array_keys($this->_dict);
         $values = array_values($this->_dict);
         for ($j = 0; $j < sizeof($lines); $j++) {
@@ -74,10 +75,19 @@ class View
                     $lines[$j] = str_replace($blocks[0][$i], preg_replace($patterns, $values, $blocks[0][$i]), $lines[$j]);
                 }
                 $lines[$j] = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $lines[$j]);
-                $lines[$j] = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?>", $lines[$j]);
+                $lines[$j] = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?> ", $lines[$j]);
+                $linesmap[$j] = true;
+            } else {
+                $linesmap[$j] = false;
             }
         }
-        $content = implode("\n", $lines);
+        //  var_dump($lines);
+        for ($i=0; $i < sizeof($lines); $i++) {
+            if ($linesmap[$i] && trim(preg_replace('/<\?php(.[^\>]*)?>/', '', $lines[$i])) == '') {
+                unset ($lines[$i]);
+            }
+        }
+        $content = implode("\n", array_filter($lines));
         return $content;
     }
 
