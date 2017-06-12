@@ -22,13 +22,13 @@
 <section>
     <h2>for(...) cycle</h2>
     <span>
-    {{for ($i=0 to count(@passed))}}{{@passed[$i]}}{{end}}
+        {{for ($i=0 to count(@passed))}}{{@passed[$i]}}{{end}}
     </span>
 </section>
 <section>
     <h2>foreach cycle</h2>
     <span>
-    {{@passed as $letter}}{{$letter}}{{end}}
+        {{@passed as $letter}}{{$letter}}{{end}}
     </span>
 </section>
 <section>
