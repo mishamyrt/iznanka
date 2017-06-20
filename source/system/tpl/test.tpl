@@ -31,9 +31,6 @@
         {{@passed as $letter}}{{$letter}}{{end}}
     </span>
 </section>
-<section>
-    <h2>Espcape</h2>
-</section>
 </div>
 
 <style>
