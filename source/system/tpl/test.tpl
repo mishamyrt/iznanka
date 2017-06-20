@@ -16,7 +16,9 @@
 </section>
 <section>
     <h2>Anticache</h2>
-    <span>{{anticache file='/img/favicon.ico'}}</span>
+    <span>
+        {{anticache file='/img/favicon.ico'}}
+    </span>
     <p>If you see something like '/img/favicon.ico?1495876297', test passed.</p>
 </section>
 <section>
@@ -30,9 +32,6 @@
     <span>
         {{@passed as $letter}}{{$letter}}{{end}}
     </span>
-</section>
-<section>
-    <h2>Espcape</h2>
 </section>
 </div>
 

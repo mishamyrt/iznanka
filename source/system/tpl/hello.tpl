@@ -24,9 +24,8 @@
     }
     
     span {
-        background-color: #fffde4;
-        color: #1d6371;
-        padding: 2px 6px;
+    color: #107c58;
+    padding: 0 0 0 5px;
     }
     
     img {

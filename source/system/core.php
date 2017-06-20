@@ -55,7 +55,7 @@ class View
         }
     }
 
-    private function compile($content)
+    public function compile($content)
     {
         ob_start();
         eval('?> ' . $this->_render($content));
