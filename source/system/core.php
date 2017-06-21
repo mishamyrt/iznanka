@@ -76,15 +76,13 @@ class View
                 }
                 $lines[$j] = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $lines[$j]);
                 $lines[$j] = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?>", $lines[$j]);
-                if (trim(preg_replace('/<\?php(.+?)\?>/', '', $lines[$j])) === ''){ //Ищем строку в которой только ПХП
-                    if (strstr($lines[$j], 'echo') !== false){
+                if (trim(preg_replace('/<\?php(.+?)\?>/', '', $lines[$j])) === '') { //Ищем строку в которой только ПХП
+                    if (strstr($lines[$j], 'echo') !== false) {
                         $lines[$j] = $lines[$j] . ' '; //В строке есть вывод, экранируем перенос строки пробелом
-                    }
-                    else{
+                    } else {
                         $lines[$j] = trim($lines[$j]); //Вывода нет, смело обрезаем
                     }
-                }
-                else{
+                } else {
                     $lines[$j] .= ' '; //В строке есть ХТМЛ, экранируем
                 }
             }
