@@ -1,5 +1,5 @@
 <?php
-if (uri == '/test') {
+addRoute('/test', function($view){
     $view->set('passed', array(
         'P',
         'a',
@@ -9,7 +9,7 @@ if (uri == '/test') {
         'd')
     );
     $view->set('template', 'test.tpl');
-}
+});
 function stopwatch()
 {
     list ($usec, $sec) = explode (' ', microtime ());
