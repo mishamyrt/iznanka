@@ -120,6 +120,28 @@ function throw404()
     $view->set('title', '404');
 }
 
+function addRoute($route, $callback)
+{
+    global $staticRoutes, $dynamicRoutes;
+    if (substr($route, -1) !== '/') {
+        $route .= '/';
+    }
+    if (strpos($route, '*')) {
+        $route = str_replace('/', '\/', $route);
+        $route = str_replace('*', '(.*)', $route);
+        $dynamicRoutes[] = array('/^'.$route.'/', $callback);
+    } else {
+        $staticRoutes[] = array($route, $callback);
+    }
+}
+function addRoutes()
+{
+    $_routes = func_get_args();
+    for ($i = 0; $i < sizeof($_routes); $i++) {
+        addRoute(array_keys($_routes[$i])[0], array_values($_routes[$i])[0]);
+    }
+}
+
 function runModule($module)
 {
     global $db, $view;
@@ -129,13 +151,32 @@ function runModule($module)
 function iznanka()
 {
     session_start();
-    global $db, $config, $view;
+    global $db, $config, $view, $staticRoutes, $dynamicRoutes;
     $view = new View();
-    define('path', explode("/", $_SERVER['REQUEST_URI']));
-    define('uri', $_SERVER['REQUEST_URI']);
+    $uri = $_SERVER['REQUEST_URI'];
+    if (substr($uri, -1) !== '/') {
+        $uri .= '/';
+    }
+    define('path', explode("/", $uri));
+    define('uri', $uri);
+    unset($uri);
     $includes = glob(ROOT_DIR . '/system/includes/' . '*.php');
-    for ($i=0; $i < sizeof($includes); $i++) {
+    for ($i = 0; $i < sizeof($includes); $i++) {
         include_once ($includes[$i]);
+    }
+    for ($i = 0; $i < sizeof($staticRoutes); $i++) {
+        if (uri === $staticRoutes[$i][0]) {
+            call_user_func($staticRoutes[$i][1], $view);
+        }
+    }
+    if ($view->template === '') {
+        for ($i = 0; $i < sizeof($dynamicRoutes); $i++) {
+            // echo $dynamicRoutes[$i][0];
+            preg_match($dynamicRoutes[$i][0], uri, $match);
+            if ($match) {
+                call_user_func($dynamicRoutes[$i][1], $view);
+            }
+        }
     }
     if ($view->template === '') {
         if (uri === '/') {
