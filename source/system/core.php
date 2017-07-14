@@ -1,6 +1,6 @@
 <?php
 define("ROOT_DIR", getcwd());
-define("iznanka_version", '2.3');
+define("iznanka_version", '2.3.2b');
 $config = include('config.php');
 $db = null;
 $view = null;
