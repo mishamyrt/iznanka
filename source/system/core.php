@@ -105,10 +105,12 @@ class View
 function connect()
 {
     global $db, $config;
-    $db = new mysqli('localhost', $config['dbusername'], $config['dbpass'], $config['dbname']);
-    $db->set_charset('utf8');
-    if ($db->connect_errno) {
-        die('Can\'t connect to datebase: ' . $db->connect_error . "\n");
+    if (!$db){
+        $db = new mysqli('localhost', $config['dbusername'], $config['dbpass'], $config['dbname']);
+        $db->set_charset('utf8');
+        if ($db->connect_errno) {
+            die('Can\'t connect to datebase: ' . $db->connect_error . "\n");
+        }
     }
 }
 

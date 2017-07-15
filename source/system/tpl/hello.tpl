@@ -1,7 +1,7 @@
 <section>
-    <h1>Изнанка помогает быстро начать писать проект</h1>
+    <h1>Изнанка помогает быстро приступить к проекту</h1>
     <p>Для начала удалите файл <span>/system/tpl/hello.tpl</span>,<br>отредактируйте <span>/system/tpl/index.tpl</span>,<br>и задайте шаблон в <span>/system/config.php</span>.</p>
-    <a href="https://misha.myrt.co/tools/iznanka/"><img src="/img/i@4x.png"></a>
+    <a href="https://misha.myrt.co/tools/iznanka/"><img src="/img/logo.svg"></a>
 </section>
 <style type="text/css" media="screen">
     body,
@@ -25,7 +25,7 @@
     
     span {
     color: #107c58;
-    padding: 0 0 0 5px;
+    padding: 0 0 0 2px;
     }
     
     img {
