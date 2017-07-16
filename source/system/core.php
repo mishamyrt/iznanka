@@ -139,8 +139,8 @@ function addRoute($route, $callback)
 function addRoutes()
 {
     $_routes = func_get_args();
-    for ($i = 0; $i < sizeof($_routes); $i++) {
-        addRoute(array_keys($_routes[$i])[0], array_values($_routes[$i])[0]);
+    foreach ($_routes as $route => $callback){
+        addRoute($route, $callback);
     }
 }
 
@@ -173,7 +173,6 @@ function iznanka()
     }
     if ($view->template === '') {
         for ($i = 0; $i < sizeof($dynamicRoutes); $i++) {
-            // echo $dynamicRoutes[$i][0];
             preg_match($dynamicRoutes[$i][0], uri, $match);
             if ($match) {
                 call_user_func($dynamicRoutes[$i][1], $view);
