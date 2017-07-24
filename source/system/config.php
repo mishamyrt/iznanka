@@ -4,5 +4,7 @@
   'datebase-name' => '',
   'datebase-username' => '',
   'datebase-password' => '',
-  'user-session' => true
+  'user-session' => true,
+  'cache-enabled' => true,
+  'cache-lifetime' => 100
 );

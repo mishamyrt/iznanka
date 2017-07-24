@@ -1,17 +1,20 @@
 <?php
+$config = include('config.php');
+$db = null;
+
 define('IZNANKA_ROOT', getcwd());
 define('IZNANKA_VERSION', '3.0.0a');
 define('IZNANKA_TPL', IZNANKA_ROOT . '/system/tpl/');
+define('IZNANKA_CACHE', IZNANKA_ROOT . '/caches/');
 define('IZNANKA_MODULES', IZNANKA_ROOT . '/system/modules/');
-
-$config = include('config.php');
-$db = null;
 
 class View
 {
     protected static $var = array();
     protected static $patterns;
     protected static $values;
+    protected static $caching;
+    protected static $cacheLifetime;
 
     protected static $dict = array(
         '/include\s\((.[^\s\?]*)\)/'                    => 'self::display($1)',
@@ -25,8 +28,10 @@ class View
         '/@([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]+)/' => 'self::get(\'$1\')'
     );
 
-    public static function init()
+    public static function init($caching, $cacheLifetime)
     {
+        self::$caching = $caching;
+        self::$cacheLifetime = $cacheLifetime;
         self::$patterns = array_keys(self::$dict);
         self::$values = array_values(self::$dict);
     }
@@ -57,17 +62,28 @@ class View
     {
         $file = IZNANKA_TPL . $tplPath;
         if (file_exists($file)) {
-            $a = file_get_contents($file);
-            return self::render($a);
+            return self::render(file_get_contents($file), $tplPath);
         } else {
             die('There is no template '. $file);
         }
     }
-    public static function render(string $template) : string
+    public static function render(string $template, $filename) : string
     {
-        //TODO: Cache generated php code
+
+        $filename = str_replace('/', '.', $filename);
+        if (self::$caching){
+            $cachename = IZNANKA_CACHE . $filename;
+            if (file_exists($cachename) && (time() - filemtime($cachename)) <= self::$cacheLifetime)
+                $code = file_get_contents($cachename);
+            else {
+                $code = self::codify($template);
+                file_put_contents($cachename, $code);
+            }
+        }
+        else
+            $code = self::codify($template);
         ob_start();
-        eval('?> ' . self::codify($template));
+        eval('?> ' . $code);
         return ob_get_clean();
     }
 
@@ -153,7 +169,7 @@ function runModule($module)
 global $db, $config, $staticRoutes, $dynamicRoutes;
 if ($config['user-session'])
     session_start();
-View::init();
+View::init($config['cache-enabled'], $config['cache-lifetime']);
 $uri = $_SERVER['REQUEST_URI'];
 if (substr($uri, -1) !== '/') {
     $uri .= '/';

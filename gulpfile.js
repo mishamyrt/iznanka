@@ -12,8 +12,7 @@ gulp.task('default', function () {
     cmd.get('php minify.php ' + build + '/system/core.php');
     cmd.get('cp readme.txt ' + build + '/readme.txt');
     cmd.get('rm ' + build + '/system/includes/test.php');
-    cmd.get('rm ' + build + '/system/tpl/test.tpl');
-    cmd.get('rm ' + build + '/system/tpl/subtest.tpl');
+    cmd.get('rm ' + build + '/system/tpl/test -r');
 });
 
 gulp.task('zip', function () {

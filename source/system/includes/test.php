@@ -8,7 +8,7 @@ addRoute('/test', function(){
         'e',
         'd')
     );
-    View::set('template', 'test.tpl');
+    View::set('template', 'test/test.tpl');
     View::set('var', 'Passed');
 });
 function stopwatch()
