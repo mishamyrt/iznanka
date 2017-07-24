@@ -14,15 +14,15 @@ class View
     protected static $values;
 
     protected static $dict = array(
-        '/include\s\((.[^\s\?]*)\)/'                        => 'self::display($1)',
-        '/anticache\s\(\'(.[^\s\?]*)\'\)/'                         => 'self::anticache(\'$1\')',
-        '/if \((.*)\)/'                                     => 'if ($1){',
-        '/else/'                                            => '}else{',
-        '/end/'                                             => '}',
-        '/#/'                                               => ' echo ',
-        '/for \((.*)=(.*) to (.*)\)/'                       => 'for ($1=$2; $1 < $3; ++$1){',
-        '/{{(.*) as ([^\s]+)}}/'                            => '{{foreach ($1 as $2){}}',
-        '/@([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]+)/'     => 'self::get(\'$1\')'
+        '/include\s\((.[^\s\?]*)\)/'                    => 'self::display($1)',
+        '/anticache\s\(\'(.[^\s\?]*)\'\)/'              => 'self::anticache(\'$1\')',
+        '/if \((.*)\)/'                                 => 'if ($1){',
+        '/else/'                                        => '}else{',
+        '/end/'                                         => '}',
+        '/#/'                                           => ' echo ',
+        '/for \((.*)=(.*) to (.*)\)/'                   => 'for ($1=$2; $1 < $3; ++$1){',
+        '/{{(.*) as ([^\s]+)}}/'                        => '{{foreach ($1 as &$2){}}',
+        '/@([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]+)/' => 'self::get(\'$1\')'
     );
 
     public static function init()
@@ -65,9 +65,8 @@ class View
     }
     public static function render(string $template) : string
     {
+        //TODO: Cache generated php code
         ob_start();
-        // var_dump ($template);
-        // echo self::render(file_get_contents($file));
         eval('?> ' . self::codify($template));
         return ob_get_clean();
     }
@@ -106,7 +105,7 @@ function connect()
 {
     global $db, $config;
     if (!$db) {
-        $db = new mysqli('localhost', $config['dbusername'], $config['dbpass'], $config['dbname']);
+        $db = new mysqli('localhost', $config['datebase-username'], $config['datebase-password'], $config['datebase-name']);
         $db->set_charset('utf8');
         if ($db->connect_errno) {
             die('Can\'t connect to datebase: ' . $db->connect_error . "\n");
@@ -127,6 +126,7 @@ function addRoute($route, $callback)
     if (substr($route, -1) !== '/') {
         $route .= '/';
     }
+    //TODO: Cache generated regex
     if (strpos($route, '*')) {
         $route = str_replace('/', '\/', $route);
         $route = str_replace('*', '(.*)', $route);
@@ -142,8 +142,6 @@ function addRoutes()
     for ($i = 0; $i < $size; ++$i) {
         addRoute(array_keys($_routes[$i])[0], array_values($_routes[$i])[0]);
     }
-    foreach ($_routes as $route => $callback) {
-    }
 }
 
 function runModule($module)
@@ -152,8 +150,9 @@ function runModule($module)
     require_once IZNANKA_MODULES . $module . '.php';
 }
 
-session_start();
 global $db, $config, $staticRoutes, $dynamicRoutes;
+if ($config['user-session'])
+    session_start();
 View::init();
 $uri = $_SERVER['REQUEST_URI'];
 if (substr($uri, -1) !== '/') {
@@ -185,14 +184,14 @@ if (View::get('template') === '') {
 }
 if (View::get('template') === '') {
     if (uri === '/') {
-        View::set('template', $config['deftemplate']);
-        View::set('title', $config['title']);
+        View::set('template', $config['templates-default']);
+        View::set('title', $config['templates-title']);
     } else {
         throw404();
     }
 }
-// echo View::get('template');
-    header('X-Powered-By: Iznanka v' . IZNANKA_VERSION);
+
+header('X-Powered-By: Iznanka v' . IZNANKA_VERSION);
     print View::display('index.tpl');
 if ($db) {
     $db->close();

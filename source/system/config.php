@@ -1,7 +1,8 @@
 <?php return array (
-  'title' => 'Изнанка',
-  'deftemplate' => 'hello.tpl',
-  'dbname' => '',
-  'dbusername' => '',
-  'dbpass' => ''
+  'templates-title' => 'Изнанка',
+  'templates-default' => 'hello.tpl',
+  'datebase-name' => '',
+  'datebase-username' => '',
+  'datebase-password' => '',
+  'user-session' => true
 );
