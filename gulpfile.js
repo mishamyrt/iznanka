@@ -17,7 +17,7 @@ gulp.task('default', function () {
 });
 
 gulp.task('zip', function () {
-    var version = pkg.version;
+    let version = pkg.version;
     return gulp.src(build + '/**/*', { dot: true })
         .pipe(zip('mishamyrt-iznanka-' + version + '.zip'))
         .pipe(gulp.dest(release));
