@@ -1,83 +1,108 @@
 <?php
-define("ROOT_DIR", getcwd());
-define("iznanka_version", '2.3.2b');
 $config = include('config.php');
 $db = null;
-$view = null;
+
+define('IZNANKA_ROOT', getcwd());
+define('IZNANKA_VERSION', '3.0.0');
+define('IZNANKA_TPL', IZNANKA_ROOT . '/system/tpl/');
+define('IZNANKA_CACHE', IZNANKA_ROOT . '/caches/');
+define('IZNANKA_MODULES', IZNANKA_ROOT . '/system/modules/');
 
 class View
 {
-    private $_path = ROOT_DIR . '/system/tpl/';
-    private $_var = array();
+    protected static $var = array();
+    protected static $patterns;
+    protected static $values;
+    protected static $caching;
+    protected static $cacheLifetime;
 
-    protected $_dict = array(
-        "/include file='(.*)'/"       => '$this->_include("$1")',
-        "/anticache file='(.*)'/"     => '$this->_anticache("$1")',
-        "/if \((.*)\)/"               => 'if ($1){',
-        "/else/"                      => '}else{',
-        "/end/"                       => '}',
-        "/#/"                         => ' echo ',
-        '/for \((.*)=(.*) to (.*)\)/' => 'for ($1=$2; $1 < $3; ++$1){',
-        "/{{(.*) as ([^\s]+)}}/"      => '{{foreach ($1 as $2){}}',
-        "/@/"                         => '$this->'
+    protected static $dict = array(
+        '/include\s\((.[^\s\?]*)\)/'                    => 'self::display($1)',
+        '/anticache\s\(\'(.[^\s\?]*)\'\)/'              => 'self::anticache(\'$1\')',
+        '/if \((.*)\)/'                                 => 'if ($1){',
+        '/else/'                                        => '}else{',
+        '/end/'                                         => '}',
+        '/#/'                                           => ' echo ',
+        '/for \((.*)=(.*) to (.*)\)/'                   => 'for ($1=$2; $1 < $3; ++$1){',
+        '/{{(.*) as ([^\s]+)}}/'                        => '{{foreach ($1 as &$2){}}',
+        '/@([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]+)/' => 'self::get(\'$1\')'
     );
 
-    public function set($name, $value)
+    public static function init($caching, $cacheLifetime)
     {
-        $this->_var[$name] = $value;
+        self::$caching = $caching;
+        self::$cacheLifetime = $cacheLifetime;
+        self::$patterns = array_keys(self::$dict);
+        self::$values = array_values(self::$dict);
+    }
+    
+    public static function set($name, $value)
+    {
+        self::$var[$name] = $value;
     }
 
-    public function __get($name)
+    public static function get($name)
     {
-        if (isset($this->_var[$name])) {
-            return $this->_var[$name];
+        if (isset(self::$var[$name])) {
+            return self::$var[$name];
         }
         return '';
     }
 
-    private function _include($template)
+    private static function anticache($filename)
     {
-        $file = $this->_path . $template;
-        if (!file_exists($file)) {
-            die('There is no template at ' . $file);
-        }
-        $content = file_get_contents($file);
-        echo $this->compile($content);
-    }
-
-    private function _anticache($filename)
-    {
-        $file = ROOT_DIR . $filename;
+        $file = IZNANKA_ROOT . $filename;
         if (file_exists($file)) {
-            echo $filename . '?' . filemtime($file);
+            return $filename . '?' . filemtime($file);
         } else {
-            echo $filename;
+            return $filename;
         }
     }
-
-    public function compile($content)
+    public static function display(string $tplPath)
     {
+        $file = IZNANKA_TPL . $tplPath;
+        if (file_exists($file)) {
+            return self::render(file_get_contents($file), $tplPath);
+        } else {
+            die('There is no template '. $file);
+        }
+    }
+    public static function render(string $template, $filename) : string
+    {
+
+        $filename = str_replace('/', '.', $filename);
+        if (self::$caching){
+            $cachename = IZNANKA_CACHE . $filename;
+            if (file_exists($cachename) && (time() - filemtime($cachename)) <= self::$cacheLifetime)
+                $code = file_get_contents($cachename);
+            else {
+                $code = self::codify($template);
+                file_put_contents($cachename, $code);
+            }
+        }
+        else
+            $code = self::codify($template);
         ob_start();
-        eval('?> ' . $this->_render($content));
+        eval('?> ' . $code);
         return ob_get_clean();
     }
 
-    private function _render($content)
+    private static function codify($content)
     {
         $lines = explode("\n", $content);
         $linesmap = array();
-        $patterns = array_keys($this->_dict);
-        $values = array_values($this->_dict);
-        for ($j = 0; $j < sizeof($lines); $j++) {
-            preg_match_all("/{{(.[^}]*)}}/", $lines[$j], $blocks);
-            if (sizeof($blocks[0]) > 0) {
-                for ($i=0; $i < sizeof($blocks[0]); $i++) {
-                    $lines[$j] = str_replace($blocks[0][$i], preg_replace($patterns, $values, $blocks[0][$i]), $lines[$j]);
+        $size = sizeof($lines);
+        for ($j = 0; $j < $size; ++$j) {
+            if (strpos($lines[$j], '}}')) {
+                preg_match_all('/{{(.[^}]*)}}/', $lines[$j], $blocks);
+                $bsize = sizeof($blocks[0]);
+                for ($i=0; $i < $bsize; ++$i) {
+                    $lines[$j] = str_replace($blocks[0][$i], preg_replace(self::$patterns, self::$values, $blocks[0][$i]), $lines[$j]);
                 }
                 $lines[$j] = preg_replace('/{{([^}\s]+)}}/', '<?php echo $1 ?>', $lines[$j]);
-                $lines[$j] = preg_replace('/{{(.[^}]*)}}/', "<?php $1 ?>", $lines[$j]);
+                $lines[$j] = preg_replace('/{{(.[^}]*)}}/', '<?php $1 ?>', $lines[$j]);
                 if (trim(preg_replace('/<\?php(.+?)\?>/', '', $lines[$j])) === '') { //Ищем строку в которой только ПХП
-                    if (strstr($lines[$j], 'echo') !== false) {
+                    if (strpos($lines[$j], 'echo') !== false) {
                         $lines[$j] = $lines[$j] . ' '; //В строке есть вывод, экранируем перенос строки пробелом
                     } else {
                         $lines[$j] = trim($lines[$j]); //Вывода нет, смело обрезаем
@@ -90,23 +115,13 @@ class View
         $content = implode("\n", array_filter($lines)); //Собираем, удаляя пустые строки
         return $content;
     }
-
-    public function display($template)
-    {
-        $file = $this->_path . $template;
-        if (!file_exists($file)) {
-            die('There is no template at '. $file);
-        }
-        $content = $this->compile(file_get_contents($file));
-        echo $content;
-    }
 }
 
 function connect()
 {
     global $db, $config;
-    if (!$db){
-        $db = new mysqli('localhost', $config['dbusername'], $config['dbpass'], $config['dbname']);
+    if (!$db) {
+        $db = new mysqli('localhost', $config['datebase-username'], $config['datebase-password'], $config['datebase-name']);
         $db->set_charset('utf8');
         if ($db->connect_errno) {
             die('Can\'t connect to datebase: ' . $db->connect_error . "\n");
@@ -116,10 +131,9 @@ function connect()
 
 function throw404()
 {
-    global $view;
     header('HTTP/1.0 404 Not Found');
-    $view->set('template', '404.tpl');
-    $view->set('title', '404');
+    View::set('template', '404.tpl');
+    View::set('title', '404');
 }
 
 function addRoute($route, $callback)
@@ -128,6 +142,7 @@ function addRoute($route, $callback)
     if (substr($route, -1) !== '/') {
         $route .= '/';
     }
+    //TODO: Cache generated regex
     if (strpos($route, '*')) {
         $route = str_replace('/', '\/', $route);
         $route = str_replace('*', '(.*)', $route);
@@ -139,58 +154,61 @@ function addRoute($route, $callback)
 function addRoutes()
 {
     $_routes = func_get_args();
-    for ($i = 0; $i < sizeof($_routes); $i++) {
+    $size = sizeof($_routes);
+    for ($i = 0; $i < $size; ++$i) {
         addRoute(array_keys($_routes[$i])[0], array_values($_routes[$i])[0]);
     }
 }
 
 function runModule($module)
 {
-    global $db, $view;
-    include_once ROOT_DIR . '/system/modules/' . $module . '.php';
+    global $db;
+    require_once IZNANKA_MODULES . $module . '.php';
 }
 
-function iznanka()
-{
+global $db, $config, $staticRoutes, $dynamicRoutes;
+if ($config['user-session'])
     session_start();
-    global $db, $config, $view, $staticRoutes, $dynamicRoutes;
-    $view = new View();
-    $uri = $_SERVER['REQUEST_URI'];
-    if (substr($uri, -1) !== '/') {
-        $uri .= '/';
+View::init($config['cache-enabled'], $config['cache-lifetime']);
+$uri = $_SERVER['REQUEST_URI'];
+if (substr($uri, -1) !== '/') {
+    $uri .= '/';
+}
+define('path', explode('/', $uri));
+define('uri', $uri);
+unset($uri);
+$includes = glob(IZNANKA_ROOT . '/system/includes/' . '*.php');
+$size = sizeof($includes);
+for ($i = 0; $i < $size; ++$i) {
+    require ($includes[$i]);
+}
+unset($includes);
+$size = sizeof($staticRoutes);
+for ($i = 0; $i < $size; ++$i) {
+    if (uri === $staticRoutes[$i][0]) {
+        call_user_func($staticRoutes[$i][1]);
     }
-    define('path', explode("/", $uri));
-    define('uri', $uri);
-    unset($uri);
-    $includes = glob(ROOT_DIR . '/system/includes/' . '*.php');
-    for ($i = 0; $i < sizeof($includes); $i++) {
-        include_once ($includes[$i]);
-    }
-    for ($i = 0; $i < sizeof($staticRoutes); $i++) {
-        if (uri === $staticRoutes[$i][0]) {
-            call_user_func($staticRoutes[$i][1], $view);
+}
+if (View::get('template') === '') {
+    $size = sizeof($dynamicRoutes);
+    for ($i = 0; $i < $size; ++$i) {
+        preg_match($dynamicRoutes[$i][0], uri, $match);
+        if ($match) {
+            call_user_func($dynamicRoutes[$i][1]);
         }
     }
-    if ($view->template === '') {
-        for ($i = 0; $i < sizeof($dynamicRoutes); $i++) {
-            // echo $dynamicRoutes[$i][0];
-            preg_match($dynamicRoutes[$i][0], uri, $match);
-            if ($match) {
-                call_user_func($dynamicRoutes[$i][1], $view);
-            }
-        }
+}
+if (View::get('template') === '') {
+    if (uri === '/') {
+        View::set('template', $config['templates-default']);
+        View::set('title', $config['templates-title']);
+    } else {
+        throw404();
     }
-    if ($view->template === '') {
-        if (uri === '/') {
-            $view->set('template', $config['deftemplate']);
-            $view->set('title', $config['title']);
-        } else {
-            throw404();
-        }
-    }
-    header('X-Powered-By: Iznanka ' . iznanka_version);
-    $view->display('index.tpl');
-    if ($db) {
-        $db->close();
-    }
+}
+
+header('X-Powered-By: Iznanka v' . IZNANKA_VERSION);
+    print View::display('index.tpl');
+if ($db) {
+    $db->close();
 }

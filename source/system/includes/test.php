@@ -1,6 +1,6 @@
 <?php
-addRoute('/test', function($view){
-    $view->set('passed', array(
+addRoute('/test', function(){
+    View::set('passed', array(
         'P',
         'a',
         's',
@@ -8,7 +8,8 @@ addRoute('/test', function($view){
         'e',
         'd')
     );
-    $view->set('template', 'test.tpl');
+    View::set('template', 'test/test.tpl');
+    View::set('var', 'Passed');
 });
 function stopwatch()
 {

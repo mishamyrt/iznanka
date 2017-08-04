@@ -12,11 +12,12 @@ gulp.task('default', function () {
     cmd.get('php minify.php ' + build + '/system/core.php');
     cmd.get('cp readme.txt ' + build + '/readme.txt');
     cmd.get('rm ' + build + '/system/includes/test.php');
-    cmd.get('rm ' + build + '/system/tpl/test.tpl');
+    cmd.get('rm ' + build + '/system/tpl/test -r');
+    cmd.get('rm ' + build + '/caches/* ');
 });
 
 gulp.task('zip', function () {
-    var version = pkg.version;
+    let version = pkg.version;
     return gulp.src(build + '/**/*', { dot: true })
         .pipe(zip('mishamyrt-iznanka-' + version + '.zip'))
         .pipe(gulp.dest(release));
