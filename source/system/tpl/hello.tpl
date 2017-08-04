@@ -1,41 +1,9 @@
-<section>
-    <h1>Изнанка помогает быстро приступить к проекту</h1>
-    <p>Для начала удалите файл <span>/system/tpl/hello.tpl</span>,<br>отредактируйте <span>/system/tpl/index.tpl</span>,<br>и задайте шаблон в <span>/system/config.php</span>.</p>
-    <a href="https://misha.myrt.co/tools/iznanka/"><img src="/img/logo.svg"></a>
-</section>
+<div class="hello">
+    <p class="hello-message">Изнанка успешно установлена и&nbsp;готова к&nbsp;работе.<br> Для начала удалите <span class="hello-file">hello.tpl</span>,<br>и&nbsp;отредактируйте <span class="hello-file">index.tpl</span></p>
+</div>
 <style type="text/css" media="screen">
-    body,
-    html {
-        font-family: -apple-system, Arial, Helvetica, sans-serif;
-        font-size: 17px;
-        line-height: 28px;
-        padding: 0;
-        margin: 0
-    }
-    
-    h1 {
-        font-size: 37px;
-        line-height: 37px;
-        margin-bottom: 16px;
-    }
-    
-    p {
-        margin: 0 0 10px;
-    }
-    
-    span {
-    color: #107c58;
-    padding: 0 0 0 2px;
-    }
-    
-    img {
-        width: 60px;
-        display: block;
-        margin: 22px auto 0;
-    }
-    
-    section {
-        max-width: 500px;
-        margin: 0 auto
-    }
+   @font-face{font-family:system;font-style:normal;font-weight:300;src:local(".SFNSText-Light"),local(".HelveticaNeueDeskInterface-Light"),local(".LucidaGrandeUI"),local("Ubuntu Light"),local("Segoe UI Light"),local("Roboto-Light"),local("DroidSans"),local("Tahoma")}.hello{align-items:center;padding:0 15%;height:100%;display:flex}.hello-file{color:#198c81}.hello-message{transition:font-size .1s linear,line-height .1s linear;max-width:70%;line-height:3.98vw;transform:translateY(-3vh);font-size:3vw}body,html{padding:0;width:100%;height:100%;font-family:"system";margin:0}@media (max-width:1020px){.hello-message{max-width:470px;font-size:32px;line-height:41px}.hello{padding:0 0 0 5%}}@media (max-width:790px){.hello-message{max-width:380px;font-size:24px;line-height:32px}}
 </style>
+<script>
+    'use strict'; document.addEventListener('DOMContentLoaded', function () { var a = document.querySelector('.hello-message'); a.style.opacity = 0, a.style.transform = 'translateY(-5vh)', a.style.transition = 'opacity .9s ease-out, transform .4s ease-out', setTimeout(function () { a.style.opacity = 1, a.style.transform = '', setTimeout(function () { a.style.transition = '', a.style.opacity = '' }, 1e3) }, 200) });
+</script>

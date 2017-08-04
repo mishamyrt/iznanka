@@ -3,7 +3,7 @@ $config = include('config.php');
 $db = null;
 
 define('IZNANKA_ROOT', getcwd());
-define('IZNANKA_VERSION', '3.0.0a');
+define('IZNANKA_VERSION', '3.0.0');
 define('IZNANKA_TPL', IZNANKA_ROOT . '/system/tpl/');
 define('IZNANKA_CACHE', IZNANKA_ROOT . '/caches/');
 define('IZNANKA_MODULES', IZNANKA_ROOT . '/system/modules/');
